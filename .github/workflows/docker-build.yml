@@ -5,13 +5,13 @@ on:
     branches:
       - main
 
+permissions:
+  packages: write
+  contents: read
+
 jobs:
   docker:
     runs-on: ubuntu-latest
-
-    permissions:
-      packages: write
-      contents: read
 
     steps:
       - name: Checkout code
@@ -33,9 +33,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Docker image
-        run: docker build -t ghcr.io/${{ github.repository }}:latest .
+      - name: Build Docker image (lowercase tag)
+        run: |
+          IMAGE_NAME="ghcr.io/${{ github.repository }}:latest"
+          IMAGE_NAME_LOWER=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
+          echo "Image name: $IMAGE_NAME_LOWER"
+          docker build -t "$IMAGE_NAME_LOWER" .
 
-      - name: Push Docker image
-        run: docker push ghcr.io/${{ github.repository }}:latest
-
+      - name: Push Docker image (lowercase tag)
+        run: |
+          IMAGE_NAME="ghcr.io/${{ github.repository }}:latest"
+          IMAGE_NAME_LOWER=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
+          docker push "$IMAGE_NAME_LOWER"
